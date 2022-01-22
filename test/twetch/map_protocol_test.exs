@@ -14,7 +14,7 @@ defmodule Twetch.MAPProtocolTest do
                chunks: [
                  ^protocol_prefix,
                  "SET",
-                 "tw_data_json",
+                 "twdata_json",
                  "null",
                  "url",
                  "null",
@@ -38,7 +38,7 @@ defmodule Twetch.MAPProtocolTest do
 
     test "builds map protocol of twetch transaction with opts values" do
       protocol_prefix = @mapProtocolPrefix
-      tw_data_json = "tw_data_json"
+      twdata_json = "twdata_json"
       url = "url"
       comment = "comment"
       mb_user = "mb_user"
@@ -47,7 +47,7 @@ defmodule Twetch.MAPProtocolTest do
       invoice = "invoice"
 
       opts = [
-        tw_data_json: tw_data_json,
+        twdata_json: twdata_json,
         url: url,
         comment: comment,
         mb_user: mb_user,
@@ -60,8 +60,8 @@ defmodule Twetch.MAPProtocolTest do
                chunks: [
                  ^protocol_prefix,
                  "SET",
-                 "tw_data_json",
-                 ^tw_data_json,
+                 "twdata_json",
+                 ^twdata_json,
                  "url",
                  ^url,
                  "comment",

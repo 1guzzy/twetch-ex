@@ -8,12 +8,13 @@ defmodule Twetch.MAPProtocol do
 
   @doc """
   Appends the MAP protocol to the given op_return.
+  #TODO change to build_post
   """
   def build(op_return, opts \\ []) do
     op_return
     |> Script.push(@mapProtocolPrefix)
     |> Script.push("SET")
-    |> set_field("tw_data_json", Keyword.get(opts, :tw_data_json))
+    |> set_field("twdata_json", Keyword.get(opts, :twdata_json))
     |> set_field("url", Keyword.get(opts, :url))
     |> set_field("comment", Keyword.get(opts, :comment))
     |> set_field("mb_user", Keyword.get(opts, :mb_user))
