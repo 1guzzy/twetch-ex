@@ -2,41 +2,66 @@ defmodule Twetch.Api do
   @moduledoc """
   An interface to Twetch API.
   """
-  @twetch_api "https://api.twetch.app/v1"
+  alias Twetch.Api.{Client, Error, Validate, Parse}
 
   @doc """
   Get payee and invoice information for the given Twetch post.
   """
   def get_payees(action, args) do
-    url = @twetch_api <> "/payees"
-
     body =
-      JSON.encode!(%{
+      Jason.encode!(%{
         action: action,
         args: args,
         client_identifier: get_env(:client_id)
       })
 
-    with {:ok, response} <- make_request(url, body),
-         {:ok, payees} <- parse_payees(response) do
+    with {:ok, response} <- call_endpoint(:payees, body),
+         :ok <- Validate.payees(response),
+         {:ok, payees} <- Parse.payees(response) do
       {:ok, payees}
     end
   end
 
-  defp make_request(url, body) do
-    with {:ok, response} <- HTTPoison.post(url, body, headers()),
-         {:ok, decoded_response} <- JSON.decode(response.body),
-         :ok <- check_errors(decoded_response) do
-      {:ok, decoded_response}
-    else
-      {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
-      {:error, {:unexpected_token, _}} -> {:error, "Unable to parse json"}
-      {:error, error} -> {:error, error}
+  @doc """
+  Get Twetch account UTXOs.
+  """
+  def get_utxos(str_pubkey) do
+    body = Jason.encode!(%{pubkey: str_pubkey, amount: 1})
+
+    with {:ok, response} <- call_endpoint(:utxos, body),
+         :ok <- Validate.utxos(response),
+         {:ok, utxos} <- Parse.utxos(response) do
+      {:ok, utxos}
     end
   end
 
-  defp headers() do
-    [{"content-type", "application/json"}, {"authorization", "Bearer #{get_env(:token)}"}]
+  @doc """
+  Get Twetch authentication challenge message.
+  """
+  def get_challenge() do
+    with {:ok, response} <- call_endpoint(:challenge),
+         :ok <- Validate.challenge(response),
+         {:ok, challenge} <- Parse.challenge(response) do
+      {:ok, challenge}
+    end
+  end
+
+  @doc """
+  Get Twetch bearer_token.
+  """
+  def get_bearer_token(address, message, signature) do
+    body =
+      Jason.encode!(%{
+        address: address,
+        message: message,
+        signature: signature
+      })
+
+    with {:ok, response} <- call_endpoint(:bearer_token, body),
+         :ok <- Validate.bearer_token(response),
+         {:ok, token} <- Parse.bearer_token(response) do
+      {:ok, token}
+    end
   end
 
   defp get_env(key) do
@@ -45,13 +70,19 @@ defmodule Twetch.Api do
     |> Keyword.get(key)
   end
 
-  defp check_errors(%{"errors" => []}), do: :ok
-  defp check_errors(%{"errors" => errors}), do: {:error, errors}
-  defp check_errors(_), do: :ok
+  defp call_endpoint(endpoint, params \\ %{}) do
+    case Client.make_request(endpoint, params) do
+      {:ok, body} ->
+        {:ok, body}
 
-  defp parse_payees(%{"invoice" => invoie, "payees" => payees}) do
-    {:ok, %{invoice: invoie, payees: payees}}
+      {:error, %Jason.DecodeError{}} ->
+        {:error, %Error{message: "Invalid json response."}}
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        {:error, %Error{message: "HTTPoison error: #{reason}"}}
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
-
-  defp parse_payees(_), do: {:error, "No payees in response"}
 end
