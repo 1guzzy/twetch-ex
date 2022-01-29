@@ -2,7 +2,7 @@ defmodule Twetch.Transaction do
   @moduledoc """
   A module for building valid Twetch transactions.
   """
-  alias BSV.Script
+  alias BSV.{UTXO, Script}
   alias Twetch.{BProtocol, MAPProtocol, AIPProtocol}
 
   def build_op_return_args(content) do
@@ -16,6 +16,10 @@ defmodule Twetch.Transaction do
 
     script.chunks
   end
+
+  # def build(content, utxo_params, outputs) do
+  # UTXO.from_params!() |> IO.inspect()
+  # end
 
   def build_op_return(content, privkey, address) do
     %Script{}
