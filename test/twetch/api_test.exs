@@ -1,7 +1,7 @@
 defmodule Twetch.ApiTest do
   use ExUnit.Case
 
-  alias Twetch.{Api, Transaction}
+  alias Twetch.Api
   alias Twetch.Api.Error
 
   describe "get_payees/2" do
@@ -13,7 +13,7 @@ defmodule Twetch.ApiTest do
 
       Application.put_env(:twetch, :config, opts)
 
-      %{action: "twetch/post@0.0.1", args: Transaction.build_op_return_args("Hello Twetchverse")}
+      %{action: "twetch/post@0.0.1", args: []}
     end
 
     test "successfully get payees", %{action: action, args: args} do

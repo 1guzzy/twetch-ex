@@ -1,8 +1,7 @@
-defmodule Twetch.BProtocolTest do
+defmodule Twetch.ABI.BProtocolTest do
   use ExUnit.Case
 
-  alias Twetch.BProtocol
-  alias BSV.Script
+  alias Twetch.ABI.BProtocol
 
   @bProtocolPrefix "19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut"
 
@@ -10,7 +9,6 @@ defmodule Twetch.BProtocolTest do
     text = "Hello Twetchverse"
     protocol_prefix = @bProtocolPrefix
 
-    assert %Script{chunks: [^protocol_prefix, ^text, "text/plain", "text", "FILENAME?"]} =
-             BProtocol.build(%Script{}, text)
+    assert [^protocol_prefix, ^text, "text/plain", "text", "no_file.txt"] = BProtocol.build(text)
   end
 end
