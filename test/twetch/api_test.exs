@@ -1,8 +1,8 @@
-defmodule Twetch.ApiTest do
+defmodule Twetch.APITest do
   use ExUnit.Case
 
-  alias Twetch.Api
-  alias Twetch.Api.Error
+  alias Twetch.API
+  alias Twetch.API.Error
 
   describe "get_payees/2" do
     setup do
@@ -49,7 +49,7 @@ defmodule Twetch.ApiTest do
       end)
 
       assert {:ok, %{invoice: ^invoice, payees: [_payee_1, _payee_2]}} =
-               Api.get_payees(action, args)
+               API.get_payees(action, args)
     end
 
     test "handles twetch error response", %{action: action, args: args} do
@@ -59,7 +59,7 @@ defmodule Twetch.ApiTest do
         {:ok, %HTTPoison.Response{body: error_body}}
       end)
 
-      assert {:error, %Error{message: "err1err2"}} = Api.get_payees(action, args)
+      assert {:error, %Error{message: "err1err2"}} = API.get_payees(action, args)
     end
 
     test "handles http error response", %{action: action, args: args} do
@@ -67,7 +67,7 @@ defmodule Twetch.ApiTest do
         {:error, %HTTPoison.Error{reason: "eek!"}}
       end)
 
-      assert {:error, %Error{message: "HTTPoison error: eek!"}} = Api.get_payees(action, args)
+      assert {:error, %Error{message: "HTTPoison error: eek!"}} = API.get_payees(action, args)
     end
 
     test "handles malformed response", %{action: action, args: args} do
@@ -75,7 +75,7 @@ defmodule Twetch.ApiTest do
         {:ok, %HTTPoison.Response{body: "[%"}}
       end)
 
-      assert {:error, %Error{message: "Invalid json response."}} = Api.get_payees(action, args)
+      assert {:error, %Error{message: "Invalid json response."}} = API.get_payees(action, args)
     end
 
     test "handles bad response", %{action: action, args: args} do
@@ -84,7 +84,7 @@ defmodule Twetch.ApiTest do
       end)
 
       assert {:error, %Error{message: "Unexpected Twetch payees response"}} =
-               Api.get_payees(action, args)
+               API.get_payees(action, args)
     end
   end
 
@@ -107,7 +107,7 @@ defmodule Twetch.ApiTest do
         {:ok, %HTTPoison.Response{body: utxo_body}}
       end)
 
-      assert {:ok, ^utxos} = Api.get_utxos(str_pubkey)
+      assert {:ok, ^utxos} = API.get_utxos(str_pubkey)
     end
 
     test "handles no utxos result" do
@@ -118,7 +118,7 @@ defmodule Twetch.ApiTest do
         {:ok, %HTTPoison.Response{body: utxo_body}}
       end)
 
-      assert {:error, %Error{message: "No UTXOs found"}} = Api.get_utxos(str_pubkey)
+      assert {:error, %Error{message: "No UTXOs found"}} = API.get_utxos(str_pubkey)
     end
 
     test "handles utxo error response" do
@@ -130,7 +130,7 @@ defmodule Twetch.ApiTest do
         {:ok, %HTTPoison.Response{body: utxo_body}}
       end)
 
-      assert {:error, %Error{message: ^error}} = Api.get_utxos(str_pubkey)
+      assert {:error, %Error{message: ^error}} = API.get_utxos(str_pubkey)
     end
 
     test "handles utxo bad response" do
@@ -142,7 +142,7 @@ defmodule Twetch.ApiTest do
       end)
 
       assert {:error, %Error{message: "Unexpected Twetch utxos response"}} =
-               Api.get_utxos(str_pubkey)
+               API.get_utxos(str_pubkey)
     end
   end
 
@@ -155,7 +155,7 @@ defmodule Twetch.ApiTest do
         {:ok, %HTTPoison.Response{body: challenge_body}}
       end)
 
-      assert {:ok, ^message} = Api.get_challenge()
+      assert {:ok, ^message} = API.get_challenge()
     end
 
     test "handles bad challenge response" do
@@ -166,7 +166,7 @@ defmodule Twetch.ApiTest do
       end)
 
       assert {:error, %Error{message: "Unexpected Twetch authentication challenge response"}} =
-               Api.get_challenge()
+               API.get_challenge()
     end
   end
 
@@ -182,7 +182,7 @@ defmodule Twetch.ApiTest do
         {:ok, %HTTPoison.Response{body: completed_challenge_body}}
       end)
 
-      assert {:ok, ^token} = Api.get_bearer_token(address, message, signature)
+      assert {:ok, ^token} = API.get_bearer_token(address, message, signature)
     end
 
     test "handles error bearer token response" do
@@ -192,7 +192,7 @@ defmodule Twetch.ApiTest do
         {:ok, %HTTPoison.Response{body: completed_challenge_body}}
       end)
 
-      assert {:error, %Twetch.Api.Error{message: "error"}} = Api.get_bearer_token("", "", "")
+      assert {:error, %Twetch.API.Error{message: "error"}} = API.get_bearer_token("", "", "")
     end
 
     test "handles bad bearer token response" do
@@ -202,8 +202,8 @@ defmodule Twetch.ApiTest do
         {:ok, %HTTPoison.Response{body: completed_challenge_body}}
       end)
 
-      assert {:error, %Twetch.Api.Error{message: "Unexpected Twetch bearer token response"}} =
-               Api.get_bearer_token("", "", "")
+      assert {:error, %Twetch.API.Error{message: "Unexpected Twetch bearer token response"}} =
+               API.get_bearer_token("", "", "")
     end
   end
 end

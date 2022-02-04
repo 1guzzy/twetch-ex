@@ -2,7 +2,7 @@ defmodule TwetchTest do
   use ExUnit.Case
 
   alias BSV.Script
-  alias Twetch.{Api, UTXO}
+  alias Twetch.{API, UTXO}
 
   doctest Twetch
 
@@ -61,7 +61,7 @@ defmodule TwetchTest do
       }
     ]
 
-    Mimic.expect(Api, :get_payees, fn _, _ -> {:ok, %{invoice: invoice, payees: payees}} end)
+    Mimic.expect(API, :get_payees, fn _, _ -> {:ok, %{invoice: invoice, payees: payees}} end)
     Mimic.expect(UTXO, :fetch, fn _ -> {:ok, utxos} end)
 
     assert %Script{} = Twetch.publish(@action, bContent)

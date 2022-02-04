@@ -1,4 +1,4 @@
-defmodule Twetch.Api.Error do
+defmodule Twetch.API.Error do
   @moduledoc false
   @type t :: %__MODULE__{message: String.t()}
 

@@ -3,7 +3,7 @@ defmodule Twetch.UTXO do
   A module for getting your Twetch UTXOs.
   """
   alias BSV.{Address, Contract, PubKey, Script, UTXO}
-  alias Twetch.Api
+  alias Twetch.API
 
   @doc """
   Get Twetch account UTXOs.
@@ -13,7 +13,7 @@ defmodule Twetch.UTXO do
     str_pubkey = PubKey.to_binary(pubkey, encoding: :hex)
     address = Address.from_pubkey(pubkey)
 
-    with {:ok, raw_utxos} <- Api.get_utxos(str_pubkey) do
+    with {:ok, raw_utxos} <- API.get_utxos(str_pubkey) do
       {:ok, Enum.map(raw_utxos, &to_utxo(&1, address))}
     end
   end

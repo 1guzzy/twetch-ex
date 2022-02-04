@@ -1,4 +1,4 @@
-defmodule Twetch.Api.Client do
+defmodule Twetch.API.Client do
   @moduledoc """
   A http client for Twetch.
   """

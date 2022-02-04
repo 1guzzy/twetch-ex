@@ -3,6 +3,7 @@ defmodule Twetch.TransactionTest do
 
   alias Twetch.Transaction
   alias BSV.{Address, KeyPair, Script}
+
   doctest Transaction
 
   describe "build/5" do

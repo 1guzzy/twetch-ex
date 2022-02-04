@@ -3,7 +3,7 @@ defmodule Twetch.Challenge do
   A module for completing Twetch authentication challenge.
   """
   alias BSV.{Address, ExtKey, Message}
-  alias Twetch.Api
+  alias Twetch.API
 
   @doc """
   Complete Twetch developer challenge to get bearer token. This function is
@@ -11,9 +11,9 @@ defmodule Twetch.Challenge do
   """
   def get_bearer_token(base64_ext_key, path \\ "m/0/0") do
     with {:ok, privkey, address} <- get_privkey_and_address(base64_ext_key, path),
-         {:ok, message} <- Api.get_challenge(),
+         {:ok, message} <- API.get_challenge(),
          signature <- Message.sign(message, privkey),
-         {:ok, bearer_token} <- Api.get_bearer_token(address, message, signature) do
+         {:ok, bearer_token} <- API.get_bearer_token(address, message, signature) do
       {:ok, bearer_token, address}
     end
   end
