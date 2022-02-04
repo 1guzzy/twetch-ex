@@ -2,37 +2,19 @@ defmodule Twetch.UTXO do
   @moduledoc """
   A module for getting your Twetch UTXOs.
   """
-  alias BSV.{Address, Contract, ExtKey, PubKey, Script, UTXO}
-  alias Twetch.Api
+  alias BSV.{Address, Contract, PubKey, Script, UTXO}
+  alias Twetch.API
 
   @doc """
   Get Twetch account UTXOs.
   """
-  @spec fetch() :: {:ok, list(UTXO.t())} | {:error, any()}
-  def fetch() do
-    with {:ok, pubkey} <- get_pubkey(),
-         str_pubkey <- PubKey.to_binary(pubkey, encoding: :hex),
-         {:ok, raw_utxos} <- Api.get_utxos(str_pubkey) do
-      address = Address.from_pubkey(pubkey)
+  @spec fetch(PubKey.t()) :: {:ok, list(UTXO.t())} | {:error, any()}
+  def fetch(pubkey) do
+    str_pubkey = PubKey.to_binary(pubkey, encoding: :hex)
+    address = Address.from_pubkey(pubkey)
 
+    with {:ok, raw_utxos} <- API.get_utxos(str_pubkey) do
       {:ok, Enum.map(raw_utxos, &to_utxo(&1, address))}
-    end
-  end
-
-  defp get_pubkey() do
-    ext_key =
-      :twetch
-      |> Application.get_env(:base64_ext_key)
-      |> ExtKey.from_seed(encoding: :base64)
-
-    case ext_key do
-      {:ok, key} ->
-        %{pubkey: pubkey} = ExtKey.derive(key, "m/0/0")
-
-        {:ok, pubkey}
-
-      {:error, _error} ->
-        {:error, "Unable to decode seed; Expecting base64 format"}
     end
   end
 

@@ -5,10 +5,18 @@ defmodule Twetch.Transaction do
   alias BSV.Script
   alias Twetch.ABI
 
-  @doc """
-  Build op return of Twetch transaction.
-  """
-  def build_op_return(action, params) do
+  def build(action, account, _utxos, payees, content) do
+    params = %{
+      privkey: account.privkey,
+      address: account.address,
+      content: content,
+      invoice: payees.invoice
+    }
+
+    build_op_return(action, params)
+  end
+
+  defp build_op_return(action, params) do
     script =
       %Script{}
       |> Script.push(:OP_FALSE)

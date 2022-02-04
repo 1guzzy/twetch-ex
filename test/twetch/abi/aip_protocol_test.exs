@@ -12,7 +12,8 @@ defmodule Twetch.ABI.AIPProtocolTest do
     test "builds map protocol of twetch transaction op return" do
       protocol_prefix = @aipProtocolPrefix
       %{privkey: privkey, pubkey: pubkey} = KeyPair.new()
-      address = pubkey |> Address.from_pubkey() |> Address.to_string()
+      address = Address.from_pubkey(pubkey)
+      str_address = Address.to_string(address)
       action = ["TEST", "ACTION"]
 
       assert [
@@ -20,7 +21,7 @@ defmodule Twetch.ABI.AIPProtocolTest do
                "ACTION",
                ^protocol_prefix,
                "BITCOIN_ECDSA",
-               ^address,
+               ^str_address,
                signature
              ] = AIPProtocol.build(action, privkey, address)
 

@@ -1,8 +1,8 @@
-defmodule Twetch.Api do
+defmodule Twetch.API do
   @moduledoc """
   An interface to Twetch API.
   """
-  alias Twetch.Api.{Client, Error, Validate, Parse}
+  alias Twetch.API.{Client, Error, Validate, Parse}
 
   @doc """
   Get payee and invoice information for the given Twetch post.

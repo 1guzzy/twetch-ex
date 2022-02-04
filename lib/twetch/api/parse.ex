@@ -1,6 +1,6 @@
-defmodule Twetch.Api.Parse do
+defmodule Twetch.API.Parse do
   @moduledoc """
-  A parser for handling Twetch Api responses.
+  A parser for handling Twetch API responses.
   """
 
   @doc """

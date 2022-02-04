@@ -1,8 +1,8 @@
-defmodule Twetch.Api.Validate do
+defmodule Twetch.API.Validate do
   @moduledoc """
-  Validate Twetch Api responses.
+  Validate Twetch API responses.
   """
-  alias Twetch.Api.Error
+  alias Twetch.API.Error
 
   @doc """
   Validate Twetch payees route response.

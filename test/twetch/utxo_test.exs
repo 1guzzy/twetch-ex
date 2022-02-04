@@ -1,16 +1,10 @@
 defmodule Twetch.UTXOTest do
   use ExUnit.Case
 
+  alias BSV.KeyPair
   alias Twetch.UTXO
 
   describe "fetch/0" do
-    setup do
-      base64_ext_key =
-        "A+2y713mUHU17yQlTCZLryMuP7SsYt3yZrivquVgrjdy1oCLJDHnrsLvoKWZF9wa6VGpCtuP1oPO0NVtLR1KYA=="
-
-      Application.put_env(:twetch, :base64_ext_key, base64_ext_key)
-    end
-
     test "successfully gets utxos" do
       sats = "1830713"
       vout = 4
@@ -31,7 +25,9 @@ defmodule Twetch.UTXOTest do
         {:ok, %HTTPoison.Response{body: utxo_body}}
       end)
 
-      assert {:ok, [utxo]} = UTXO.fetch()
+      %{pubkey: pubkey} = KeyPair.new()
+
+      assert {:ok, [utxo]} = UTXO.fetch(pubkey)
       assert %BSV.UTXO{outpoint: %{vout: ^vout}, txout: %{satoshis: ^sats}} = utxo
     end
   end
