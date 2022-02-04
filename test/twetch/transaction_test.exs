@@ -5,24 +5,24 @@ defmodule Twetch.TransactionTest do
   alias BSV.{Address, KeyPair, Script}
   doctest Transaction
 
-  describe "build_op_return/3" do
-    test "builds post op return" do
+  describe "build/5" do
+    test "builds transaction" do
       content = "Hello Twetchverse"
-      invoice = "invoice"
       action = "twetch/post@0.0.1"
 
       %{privkey: privkey, pubkey: pubkey} = KeyPair.new()
-      address = pubkey |> Address.from_pubkey() |> Address.to_string()
+      address = pubkey |> Address.from_pubkey()
 
-      params = %{
-        content: content,
-        invoice: invoice,
+      account = %{
         privkey: privkey,
         address: address
       }
 
+      payees = %{invoice: "invoice"}
+      utxos = []
+
       assert %Script{chunks: [:OP_FALSE, :OP_RETURN | tail]} =
-               Transaction.build_op_return(action, params)
+               Transaction.build(action, account, utxos, payees, content)
 
       assert length(tail) == 31
     end

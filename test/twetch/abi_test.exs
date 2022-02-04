@@ -61,7 +61,8 @@ defmodule Twetch.ABITest do
       content = "Hello Twetchverse"
       invoice = "invoice"
       %{privkey: privkey, pubkey: pubkey} = KeyPair.new()
-      address = pubkey |> Address.from_pubkey() |> Address.to_string()
+      address = Address.from_pubkey(pubkey)
+      str_address = Address.to_string(address)
 
       params = %{
         content: content,
@@ -100,7 +101,7 @@ defmodule Twetch.ABITest do
                "|",
                ^aipPrefix,
                "BITCOIN_ECDSA",
-               ^address,
+               ^str_address,
                _signature
              ] = ABI.build("twetch/post@0.0.1", params)
     end
