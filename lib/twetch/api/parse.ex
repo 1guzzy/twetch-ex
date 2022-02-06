@@ -7,7 +7,11 @@ defmodule Twetch.API.Parse do
   Parse Twetch payees route response.
   """
   def payees(%{"invoice" => invoie, "payees" => payees}) do
-    {:ok, %{invoice: invoie, payees: payees}}
+    {:ok, %{invoice: invoie, payees: Enum.map(payees, &parse_payee/1)}}
+  end
+
+  defp parse_payee(%{"to" => to, "currency" => "BSV", "amount" => amount}) do
+    %{address: to, sats: trunc(amount * 100_000_000)}
   end
 
   @doc """

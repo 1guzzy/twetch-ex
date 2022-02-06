@@ -7,9 +7,22 @@ defmodule Twetch.API.Validate do
   @doc """
   Validate Twetch payees route response.
   """
-  def payees(%{"invoice" => _invoie, "payees" => _payees, "errors" => []}), do: :ok
+  def payees(%{"invoice" => _invoie, "payees" => payees, "errors" => []}), do: check_payee(payees)
   def payees(%{"errors" => errors}), do: {:error, %Error{message: List.to_string(errors)}}
   def payees(_), do: {:error, unexpected_error("payees")}
+
+  defp check_payee([]), do: {:error, %Error{message: "No payees"}}
+
+  defp check_payee(payees) do
+    if Enum.all?(payees, &payee/1) do
+      :ok
+    else
+      {:error, %Error{message: "Unexpected payee format"}}
+    end
+  end
+
+  defp payee(%{"to" => _to, "currency" => "BSV", "amount" => _amount}), do: true
+  defp payee(_), do: false
 
   @doc """
   Validate Twetch utxos route response.
@@ -18,6 +31,13 @@ defmodule Twetch.API.Validate do
   def utxos(%{"error" => error}), do: {:error, %Error{message: error}}
   def utxos(%{"utxos" => _utxos}), do: :ok
   def utxos(_), do: {:error, unexpected_error("utxos")}
+
+  @doc """
+  Validate Twetch publish response.
+  """
+  def publish(%{"errors" => [], "published" => true, "broadcasted" => true}), do: :ok
+  def publish(%{"errors" => errors}), do: {:error, %Error{message: List.to_string(errors)}}
+  def publish(_), do: {:error, unexpected_error("publish")}
 
   @doc """
   Validate Twetch authentication challenge route response.

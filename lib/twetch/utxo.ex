@@ -18,7 +18,9 @@ defmodule Twetch.UTXO do
     end
   end
 
-  defp to_utxo(%{"txid" => txid, "vout" => vout, "satoshis" => sats}, address) do
+  defp to_utxo(%{"txid" => txid, "vout" => vout, "satoshis" => str_sats}, address) do
+    {sats, _truncate} = Integer.parse(str_sats)
+
     script =
       sats
       |> Contract.P2PKH.lock(%{address: address})

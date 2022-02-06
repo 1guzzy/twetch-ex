@@ -13,8 +13,9 @@ defmodule Twetch do
     with {:ok, account} <- Account.get(),
          {:ok, payees} <- API.get_payees(action, template),
          {:ok, utxos} <- UTXO.fetch(account.pubkey),
-         {:ok, tx} <- Transaction.build(action, account, utxos, payees, bContent) do
-      # TODO publish the transaction
+         {:ok, tx} <- Transaction.build(action, account, utxos, payees, bContent),
+         raw_tx <- Transaction.to_hex(tx),
+         :ok <- API.publish(action, raw_tx) do
       {:ok, tx}
     end
   end

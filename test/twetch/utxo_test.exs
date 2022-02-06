@@ -28,7 +28,7 @@ defmodule Twetch.UTXOTest do
       %{pubkey: pubkey} = KeyPair.new()
 
       assert {:ok, [utxo]} = UTXO.fetch(pubkey)
-      assert %BSV.UTXO{outpoint: %{vout: ^vout}, txout: %{satoshis: ^sats}} = utxo
+      assert %BSV.UTXO{outpoint: %{vout: ^vout}, txout: %{satoshis: 1_830_713}} = utxo
     end
   end
 end
