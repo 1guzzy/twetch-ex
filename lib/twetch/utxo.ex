@@ -1,32 +1,36 @@
 defmodule Twetch.UTXO do
   @moduledoc """
-  A module for getting your Twetch UTXOs.
+  A module for getting your Twetch UTXOs and turning them into spendable transaction inputs.
   """
-  alias BSV.{Address, Contract, PubKey, Script, UTXO}
-  alias Twetch.API
+  alias BSV.{Contract, PubKey, Script, UTXO}
+  alias Twetch.{Account, API}
 
   @doc """
   Get Twetch account UTXOs.
   """
-  @spec fetch(PubKey.t()) :: {:ok, list(UTXO.t())} | {:error, any()}
-  def fetch(pubkey) do
-    str_pubkey = PubKey.to_binary(pubkey, encoding: :hex)
-    address = Address.from_pubkey(pubkey)
-
-    with {:ok, raw_utxos} <- API.get_utxos(str_pubkey) do
-      {:ok, Enum.map(raw_utxos, &to_utxo(&1, address))}
+  @spec build_inputs() :: {:ok, list(UTXO.t())} | {:error, any()}
+  def build_inputs() do
+    with {:ok, %{pubkey: pubkey}} <- Account.get(),
+         str_pubkey <- PubKey.to_binary(pubkey, encoding: :hex),
+         {:ok, utxos} <- API.get_utxos(str_pubkey) do
+      {:ok, Enum.map(utxos, &to_input/1)}
     end
   end
 
-  defp to_utxo(%{"txid" => txid, "vout" => vout, "satoshis" => str_sats}, address) do
+  defp to_input(%{"txid" => txid, "vout" => vout, "satoshis" => str_sats, "path" => path}) do
     {sats, _truncate} = Integer.parse(str_sats)
+    {:ok, account} = Account.get(path)
+    script = build_input_script(sats, account.address)
 
-    script =
-      sats
-      |> Contract.P2PKH.lock(%{address: address})
-      |> Contract.to_script()
-      |> Script.to_binary(encoding: :hex)
+    %{"txid" => txid, "vout" => vout, "satoshis" => sats, "script" => script}
+    |> UTXO.from_params!()
+    |> Contract.P2PKH.unlock(%{keypair: account})
+  end
 
-    UTXO.from_params!(%{"txid" => txid, "vout" => vout, "satoshis" => sats, "script" => script})
+  defp build_input_script(sats, address) do
+    sats
+    |> Contract.P2PKH.lock(%{address: address})
+    |> Contract.to_script()
+    |> Script.to_binary(encoding: :hex)
   end
 end

@@ -2,17 +2,18 @@ defmodule Twetch.Transaction do
   @moduledoc """
   A module for building valid Twetch transactions.
   """
-  alias BSV.{Address, TxBuilder, KeyPair, Tx}
+  alias BSV.{Address, TxBuilder, Tx}
   alias BSV.Contract.{P2PKH, OpReturn}
-  alias Twetch.ABI
+  alias Twetch.{Account, ABI}
 
   def build(
         action,
-        %{privkey: privkey, address: address},
         utxos,
         %{invoice: invoice, payees: payees},
         content
       ) do
+    {:ok, %{privkey: privkey, address: address}} = Account.get()
+
     abi_params = %{
       privkey: privkey,
       address: address,
@@ -28,10 +29,8 @@ defmodule Twetch.Transaction do
         )
     ]
 
-    inputs = Enum.map(utxos, &P2PKH.unlock(&1, %{keypair: KeyPair.from_privkey(privkey)}))
-
     tx =
-      %TxBuilder{inputs: inputs, outputs: outputs}
+      %TxBuilder{inputs: utxos, outputs: outputs}
       |> TxBuilder.sort()
       |> TxBuilder.change_to(address)
       |> TxBuilder.to_tx()

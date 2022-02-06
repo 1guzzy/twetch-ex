@@ -1,11 +1,14 @@
 defmodule Twetch.UTXOTest do
   use ExUnit.Case
 
-  alias BSV.KeyPair
   alias Twetch.UTXO
 
-  describe "fetch/0" do
-    test "successfully gets utxos" do
+  import Support.TestConfig
+
+  describe "build_inputs/0" do
+    test "successfully gets inputs" do
+      mock_app_config()
+
       sats = "1830713"
       vout = 4
 
@@ -25,10 +28,9 @@ defmodule Twetch.UTXOTest do
         {:ok, %HTTPoison.Response{body: utxo_body}}
       end)
 
-      %{pubkey: pubkey} = KeyPair.new()
-
-      assert {:ok, [utxo]} = UTXO.fetch(pubkey)
-      assert %BSV.UTXO{outpoint: %{vout: ^vout}, txout: %{satoshis: 1_830_713}} = utxo
+      assert {:ok,
+              [%BSV.Contract{subject: %{outpoint: %{vout: ^vout}, txout: %{satoshis: 1_830_713}}}]} =
+               UTXO.build_inputs()
     end
   end
 end

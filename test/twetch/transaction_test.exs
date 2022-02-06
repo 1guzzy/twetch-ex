@@ -2,30 +2,20 @@ defmodule Twetch.TransactionTest do
   use ExUnit.Case
 
   alias Twetch.Transaction
-  alias BSV.{Address, KeyPair, Tx}
+  alias BSV.Tx
+
+  import Support.TestConfig
 
   doctest Transaction
 
-  describe "build/5" do
+  describe "build/4" do
     setup do
-      base64_ext_key =
-        "A+2y713mUHU17yQlTCZLryMuP7SsYt3yZrivquVgrjdy1oCLJDHnrsLvoKWZF9wa6VGpCtuP1oPO0NVtLR1KYA=="
-
-      Application.put_env(:twetch, :base64_ext_key, base64_ext_key)
+      mock_app_config()
     end
 
     test "builds transaction" do
       content = "Hello Twetchverse"
       action = "twetch/post@0.0.1"
-
-      %{privkey: privkey, pubkey: pubkey} = KeyPair.new()
-      address = pubkey |> Address.from_pubkey()
-
-      account = %{
-        privkey: privkey,
-        address: address,
-        pubkey: pubkey
-      }
 
       payees = %{
         invoice: "8da29a25-906f-4e79-a45d-15a3555769a5",
@@ -35,8 +25,51 @@ defmodule Twetch.TransactionTest do
         ]
       }
 
-      utxos = [
-        %BSV.UTXO{
+      inputs = inputs()
+
+      assert {:ok, %Tx{inputs: _inputs, outputs: outputs}} =
+               Transaction.build(action, inputs, payees, content)
+
+      assert length(inputs) == 1
+      assert length(outputs) == 4
+    end
+  end
+
+  defp inputs() do
+    [
+      %BSV.Contract{
+        ctx: nil,
+        mfa:
+          {BSV.Contract.P2PKH, :unlocking_script,
+           [
+             %{
+               keypair: %{
+                 address: %BSV.Address{
+                   pubkey_hash:
+                     <<155, 232, 124, 199, 213, 9, 84, 235, 183, 244, 150, 55, 49, 155, 152, 3,
+                       72, 100, 236, 250>>
+                 },
+                 privkey: %BSV.PrivKey{
+                   compressed: true,
+                   d:
+                     <<117, 50, 1, 7, 150, 121, 87, 87, 123, 183, 47, 159, 205, 75, 162, 0, 104,
+                       112, 99, 215, 174, 115, 144, 237, 119, 32, 53, 238, 136, 22, 194, 58>>
+                 },
+                 pubkey: %BSV.PubKey{
+                   compressed: true,
+                   point: %Curvy.Point{
+                     x:
+                       84_074_819_617_297_360_037_784_527_403_983_588_432_082_143_519_544_548_970_640_332_004_658_690_225_544,
+                     y:
+                       22_034_076_043_129_515_429_879_151_551_280_227_226_709_781_224_779_910_855_401_771_191_042_534_182_339
+                   }
+                 }
+               }
+             }
+           ]},
+        opts: [],
+        script: %BSV.Script{chunks: [], coinbase: nil},
+        subject: %BSV.UTXO{
           outpoint: %BSV.OutPoint{
             hash:
               <<22, 245, 201, 255, 129, 95, 125, 186, 106, 179, 131, 192, 127, 189, 80, 116, 82,
@@ -49,8 +82,8 @@ defmodule Twetch.TransactionTest do
               chunks: [
                 :OP_DUP,
                 :OP_HASH160,
-                <<235, 191, 218, 67, 105, 94, 84, 211, 45, 164, 55, 137, 92, 185, 106, 48, 246,
-                  211, 238, 224>>,
+                <<155, 232, 124, 199, 213, 9, 84, 235, 183, 244, 150, 55, 49, 155, 152, 3, 72,
+                  100, 236, 250>>,
                 :OP_EQUALVERIFY,
                 :OP_CHECKSIG
               ],
@@ -58,13 +91,7 @@ defmodule Twetch.TransactionTest do
             }
           }
         }
-      ]
-
-      assert {:ok, %Tx{inputs: inputs, outputs: outputs}} =
-               Transaction.build(action, account, utxos, payees, content)
-
-      assert length(inputs) == 1
-      assert length(outputs) == 4
-    end
+      }
+    ]
   end
 end
