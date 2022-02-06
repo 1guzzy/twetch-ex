@@ -21,9 +21,10 @@ defmodule Twetch.ABI.AIPProtocol do
 
     signature =
       action
-      |> List.to_string()
-      |> Hash.sha256()
-      |> Message.sign(privkey)
+      |> Enum.slice(0..25)
+      |> Enum.join("")
+      |> Hash.sha256(encoding: :hex)
+      |> Message.sign(privkey, encoding: :base64)
 
     append_fields(action, str_address, signature)
   end

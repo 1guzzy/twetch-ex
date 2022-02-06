@@ -8,6 +8,7 @@ defmodule Twetch.API.Client do
   @utxo_url "https://metasync.twetch.app/wallet/utxo"
 
   def make_request(:payees, body), do: post(@api_url <> "/payees", body, auth_headers())
+  def make_request(:publish, body), do: post(@api_url <> "/publish", body, auth_headers())
   def make_request(:utxos, body), do: post(@utxo_url, body, headers())
   def make_request(:challenge, _body), do: get(@auth_url <> "/challenge")
   def make_request(:bearer_token, body), do: post(@auth_url <> "/authenticate", body, headers())

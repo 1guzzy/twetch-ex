@@ -36,6 +36,24 @@ defmodule Twetch.API do
   end
 
   @doc """
+  Publish Twetch.
+  """
+  def publish(action, tx) do
+    body =
+      Jason.encode!(%{
+        broadcast: true,
+        action: action,
+        signed_raw_tx: tx,
+        payParams: %{tweetFromTwetch: false, hideTweetFromTwetchLink: true}
+      })
+
+    with {:ok, response} <- call_endpoint(:publish, body),
+         :ok <- Validate.publish(response) do
+      :ok
+    end
+  end
+
+  @doc """
   Get Twetch authentication challenge message.
   """
   def get_challenge() do

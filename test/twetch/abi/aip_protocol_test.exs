@@ -10,22 +10,24 @@ defmodule Twetch.ABI.AIPProtocolTest do
 
   describe "build/3" do
     test "builds map protocol of twetch transaction op return" do
-      protocol_prefix = @aipProtocolPrefix
       %{privkey: privkey, pubkey: pubkey} = KeyPair.new()
       address = Address.from_pubkey(pubkey)
       str_address = Address.to_string(address)
-      action = ["TEST", "ACTION"]
 
-      assert [
-               "TEST",
-               "ACTION",
-               ^protocol_prefix,
-               "BITCOIN_ECDSA",
-               ^str_address,
-               signature
-             ] = AIPProtocol.build(action, privkey, address)
+      action = Enum.map(0..30, &"TEST-#{&1}")
 
-      assert Message.verify(signature, List.to_string(action) |> Hash.sha256(), pubkey)
+      hash =
+        action
+        |> Enum.slice(0..25)
+        |> Enum.join("")
+        |> Hash.sha256(encoding: :hex)
+
+      assert [@aipProtocolPrefix, "BITCOIN_ECDSA", ^str_address, signature] =
+               action
+               |> AIPProtocol.build(privkey, address)
+               |> Enum.slice(-4..-1)
+
+      assert Message.verify(signature, hash, pubkey)
     end
 
     test "builds map protocol args of twetch transaction" do
