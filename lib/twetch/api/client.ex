@@ -30,12 +30,11 @@ defmodule Twetch.API.Client do
   defp headers(), do: [{"content-type", "application/json"}]
 
   defp auth_headers() do
-    [{"content-type", "application/json"}, {"authorization", "Bearer #{get_env(:token)}"}]
+    [
+      {"content-type", "application/json"},
+      {"Authorization", "Bearer #{get_env(:token)}"}
+    ]
   end
 
-  defp get_env(key) do
-    :twetch
-    |> Application.get_env(:config)
-    |> Keyword.get(key)
-  end
+  defp get_env(key), do: Application.get_env(:twetch, key)
 end

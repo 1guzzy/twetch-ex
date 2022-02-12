@@ -82,11 +82,7 @@ defmodule Twetch.API do
     end
   end
 
-  defp get_env(key) do
-    :twetch
-    |> Application.get_env(:config)
-    |> Keyword.get(key)
-  end
+  defp get_env(key), do: Application.get_env(:twetch, key)
 
   defp call_endpoint(endpoint, params \\ %{}) do
     case Client.make_request(endpoint, params) do

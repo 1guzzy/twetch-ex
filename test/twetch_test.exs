@@ -3,23 +3,16 @@ defmodule TwetchTest do
 
   # alias BSV.Script
   # alias Twetch.{API, UTXO}
+  #
+  # import Support.TestConfig
 
   doctest Twetch
 
-  @action "twetch/post@0.0.1"
+  # @action "twetch/post@0.0.1"
 
-  setup do
-    base64_ext_key =
-      "A+2y713mUHU17yQlTCZLryMuP7SsYt3yZrivquVgrjdy1oCLJDHnrsLvoKWZF9wa6VGpCtuP1oPO0NVtLR1KYA=="
-
-    opts = [
-      client_id: "client_id",
-      token: "token"
-    ]
-
-    Application.put_env(:twetch, :config, opts)
-    Application.put_env(:twetch, :base64_ext_key, base64_ext_key)
-  end
+  # setup do
+  # mock_app_config()
+  # end
 
   # test "greets the world" do
   # bContent = "Test"

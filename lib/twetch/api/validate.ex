@@ -11,7 +11,7 @@ defmodule Twetch.API.Validate do
   def payees(%{"errors" => errors}), do: {:error, %Error{message: List.to_string(errors)}}
   def payees(_), do: {:error, unexpected_error("payees")}
 
-  defp check_payee([]), do: {:error, %Error{message: "No payees"}}
+  defp check_payee([]), do: :ok
 
   defp check_payee(payees) do
     if Enum.all?(payees, &payee/1) do

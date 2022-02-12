@@ -4,14 +4,11 @@ defmodule Twetch.APITest do
   alias Twetch.API
   alias Twetch.API.Error
 
+  import Support.TestConfig
+
   describe "get_payees/2" do
     setup do
-      opts = [
-        client_id: "client_id",
-        token: "token"
-      ]
-
-      Application.put_env(:twetch, :config, opts)
+      mock_app_config()
 
       %{action: "twetch/post@0.0.1", args: []}
     end
