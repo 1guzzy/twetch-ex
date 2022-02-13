@@ -7,15 +7,14 @@ defmodule Twetch do
   @doc """
   Publish Twetch post.
   """
-  def publish("twetch/post@0.0.1" = action, bContent) do
-    template = ABI.build_template(action, bContent)
-
-    with {:ok, payees} <- API.get_payees(action, template),
+  def publish(action_name, args) do
+    with {:ok, action} <- ABI.new(action_name, args),
+         {:ok, %{invoice: invoice, payees: payees}} <- API.get_payees(action),
+         {:ok, updated_action} <- ABI.update(action, invoice),
          {:ok, inputs} <- UTXO.build_inputs(),
-         {:ok, tx} <- Transaction.build(action, inputs, payees, bContent),
-         raw_tx <- Transaction.to_hex(tx),
-         :ok <- API.publish(action, raw_tx) do
-      {:ok, tx}
+         {:ok, tx} <- Transaction.build(updated_action.args, inputs, payees),
+         {:ok, txid} <- API.publish(action_name, tx) do
+      {:ok, txid}
     end
   end
 end
