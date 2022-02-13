@@ -4,39 +4,28 @@ defmodule Twetch.Transaction do
   """
   alias BSV.{Address, TxBuilder, Tx}
   alias BSV.Contract.{P2PKH, OpReturn}
-  alias Twetch.{Account, ABI}
+  alias Twetch.Account
 
-  def build(
-        action,
-        utxos,
-        %{invoice: invoice, payees: payees},
-        content
-      ) do
-    {:ok, %{privkey: privkey, address: address}} = Account.get()
+  def build(args, inputs, payees) do
+    {:ok, %{address: address}} = Account.get()
 
-    abi_params = %{
-      privkey: privkey,
-      address: address,
-      content: content,
-      invoice: invoice
-    }
+    tx =
+      %TxBuilder{inputs: inputs, outputs: outputs(args, payees)}
+      |> TxBuilder.sort()
+      |> TxBuilder.change_to(address)
+      |> TxBuilder.to_tx()
+      |> Tx.to_binary(encoding: :hex)
 
-    outputs = [
-      OpReturn.lock(0, %{data: ABI.build(action, abi_params)})
+    {:ok, tx}
+  end
+
+  defp outputs(args, payees) do
+    [
+      OpReturn.lock(0, %{data: args})
       | Enum.map(
           payees,
           &P2PKH.lock(&1.sats, %{address: Address.from_string!(&1.address)})
         )
     ]
-
-    tx =
-      %TxBuilder{inputs: utxos, outputs: outputs}
-      |> TxBuilder.sort()
-      |> TxBuilder.change_to(address)
-      |> TxBuilder.to_tx()
-
-    {:ok, tx}
   end
-
-  def to_hex(tx), do: Tx.to_binary(tx, encoding: :hex)
 end

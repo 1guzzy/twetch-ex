@@ -17,6 +17,7 @@ defmodule Twetch.UTXO do
     end
   end
 
+  # probably an easier way to do this
   defp to_input(%{"txid" => txid, "vout" => vout, "satoshis" => str_sats, "path" => path}) do
     {sats, _truncate} = Integer.parse(str_sats)
     {:ok, account} = Account.get(path)

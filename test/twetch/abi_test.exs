@@ -1,8 +1,10 @@
 defmodule Twetch.ABITest do
   use ExUnit.Case
 
-  alias Twetch.ABI
-  alias BSV.{Address, KeyPair}
+  alias BSV.{Address, Hash, Message}
+  alias Twetch.{Account, ABI}
+
+  import Support.TestConfig
 
   @bProtocolPrefix "19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut"
   @mapProtocolPrefix "1PuQa7K62MiKCtssSLKy1kh56WWU7MtUR5"
@@ -10,100 +12,78 @@ defmodule Twetch.ABITest do
 
   doctest ABI
 
-  describe "build_template/2" do
-    test "builds ABI post template" do
+  describe "new/1" do
+    test "creates new abi map for given action" do
+      action = "twetch/post@0.0.1"
       bPrefix = @bProtocolPrefix
       mapPrefix = @mapProtocolPrefix
       aipPrefix = @aipProtocolPrefix
-      content = "Hello Twetchverse"
+      bContent = "Hello Twetchverse"
+      args = [bContent: bContent]
 
-      assert [
-               ^bPrefix,
-               ^content,
-               "text/plain",
-               "text",
-               "no_file.txt",
-               "|",
-               ^mapPrefix,
-               "SET",
-               "twdata_json",
-               "null",
-               "url",
-               "null",
-               "comment",
-               "null",
-               "mb_user",
-               "null",
-               "reply",
-               "null",
-               "type",
-               "post",
-               "timestamp",
-               "null",
-               "app",
-               "twetch",
-               "invoice",
-               "#\{invoice}",
-               "|",
-               ^aipPrefix,
-               "BITCOIN_ECDSA",
-               "#\{myAddress}",
-               "#\{mySignature}"
-             ] = ABI.build_template("twetch/post@0.0.1", content)
+      assert {:ok,
+              %{
+                action: _action,
+                args: [
+                  ^bPrefix,
+                  ^bContent,
+                  "text/plain",
+                  "text",
+                  "twetch.txt",
+                  "|",
+                  ^mapPrefix,
+                  "SET",
+                  "twdata_json",
+                  "null",
+                  "url",
+                  "null",
+                  "comment",
+                  "null",
+                  "mb_user",
+                  "null",
+                  "reply",
+                  "null",
+                  "type",
+                  "post",
+                  "timestamp",
+                  "null",
+                  "app",
+                  "twetch",
+                  "invoice",
+                  "#\{invoice}",
+                  "|",
+                  ^aipPrefix,
+                  "BITCOIN_ECDSA",
+                  "#\{myAddress}",
+                  "#\{mySignature}"
+                ]
+              }} = ABI.new(action, args)
     end
   end
 
-  describe "build/2" do
-    test "builds ABI post" do
-      bPrefix = @bProtocolPrefix
-      mapPrefix = @mapProtocolPrefix
-      aipPrefix = @aipProtocolPrefix
-      content = "Hello Twetchverse"
-      invoice = "invoice"
-      %{privkey: privkey, pubkey: pubkey} = KeyPair.new()
-      address = Address.from_pubkey(pubkey)
+  describe "update/2" do
+    setup do
+      mock_app_config()
+      {:ok, action} = ABI.new("twetch/post@0.0.1", bContent: "Hello")
+
+      action
+    end
+
+    test "updates abi for post action", abi do
+      {:ok, %{pubkey: pubkey, address: address}} = Account.get()
       str_address = Address.to_string(address)
+      invoice = "10101"
 
-      params = %{
-        content: content,
-        invoice: invoice,
-        privkey: privkey,
-        address: address
-      }
+      assert {:ok, %{args: args}} = ABI.update(abi, invoice)
+      assert [^invoice, "|", _aip, _algo, ^str_address, signature] = Enum.slice(args, -6..-1)
 
-      assert [
-               ^bPrefix,
-               ^content,
-               "text/plain",
-               "text",
-               "no_file.txt",
-               "|",
-               ^mapPrefix,
-               "SET",
-               "twdata_json",
-               "null",
-               "url",
-               "null",
-               "comment",
-               "null",
-               "mb_user",
-               "null",
-               "reply",
-               "null",
-               "type",
-               "post",
-               "timestamp",
-               "null",
-               "app",
-               "twetch",
-               "invoice",
-               ^invoice,
-               "|",
-               ^aipPrefix,
-               "BITCOIN_ECDSA",
-               ^str_address,
-               _signature
-             ] = ABI.build("twetch/post@0.0.1", params)
+      hash =
+        args
+        |> Enum.slice(0..25)
+        |> Enum.join("")
+        |> Hash.sha256(encoding: :hex)
+
+      assert Message.verify(signature, hash, pubkey)
     end
   end
 end

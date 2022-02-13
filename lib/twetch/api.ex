@@ -3,14 +3,15 @@ defmodule Twetch.API do
   An interface to Twetch API.
   """
   alias Twetch.API.{Client, Error, Validate, Parse}
+  alias BSV.Tx
 
   @doc """
   Get payee and invoice information for the given Twetch post.
   """
-  def get_payees(action, args) do
+  def get_payees(%{action: action, args: args}) do
     body =
       Jason.encode!(%{
-        action: action,
+        action: action["name"],
         args: args,
         client_identifier: get_env(:client_id)
       })
@@ -49,7 +50,7 @@ defmodule Twetch.API do
 
     with {:ok, response} <- call_endpoint(:publish, body),
          :ok <- Validate.publish(response) do
-      :ok
+      {:ok, Tx.from_binary!(tx, encoding: :hex) |> Tx.get_txid()}
     end
   end
 
