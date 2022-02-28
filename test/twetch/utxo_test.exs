@@ -7,7 +7,7 @@ defmodule Twetch.UTXOTest do
 
   describe "build_inputs/0" do
     test "successfully gets inputs" do
-      mock_app_config()
+      bot = mock_app_config()
 
       sats = "1830713"
       vout = 4
@@ -30,7 +30,7 @@ defmodule Twetch.UTXOTest do
 
       assert {:ok,
               [%BSV.Contract{subject: %{outpoint: %{vout: ^vout}, txout: %{satoshis: 1_830_713}}}]} =
-               UTXO.build_inputs()
+               UTXO.build_inputs(bot)
     end
   end
 end

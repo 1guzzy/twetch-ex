@@ -8,12 +8,12 @@ defmodule Twetch.APITest do
 
   describe "get_payees/2" do
     setup do
-      mock_app_config()
+      bot = mock_app_config()
 
-      %{action: %{"name" => "twetch/post@0.0.1"}, args: []}
+      %{bot: bot, abi: %{action: %{"name" => "twetch/post@0.0.1"}, args: []}}
     end
 
-    test "successfully get payees", abi do
+    test "successfully get payees", %{bot: bot, abi: abi} do
       invoice = "9e9a2c66-4c60-4280-9c7f-32abe3fb4831"
 
       payees = [
@@ -45,41 +45,42 @@ defmodule Twetch.APITest do
         {:ok, %HTTPoison.Response{body: Jason.encode!(payees)}}
       end)
 
-      assert {:ok, %{invoice: ^invoice, payees: [_payee_1, _payee_2]}} = API.get_payees(abi)
+      assert {:ok, %{invoice: ^invoice, payees: [_payee_1, _payee_2]}} = API.get_payees(bot, abi)
     end
 
-    test "handles twetch error response", abi do
+    test "handles twetch error response", %{bot: bot, abi: abi} do
       error_body = Jason.encode!(%{"errors" => ["err1", "err2"]})
 
       Mimic.expect(HTTPoison, :post, fn _url, _body, _headers ->
         {:ok, %HTTPoison.Response{body: error_body}}
       end)
 
-      assert {:error, %Error{message: "err1err2"}} = API.get_payees(abi)
+      assert {:error, %Error{message: "err1err2"}} = API.get_payees(bot, abi)
     end
 
-    test "handles http error response", abi do
+    test "handles http error response", %{bot: bot, abi: abi} do
       Mimic.expect(HTTPoison, :post, fn _url, _body, _headers ->
         {:error, %HTTPoison.Error{reason: "eek!"}}
       end)
 
-      assert {:error, %Error{message: "HTTPoison error: eek!"}} = API.get_payees(abi)
+      assert {:error, %Error{message: "HTTPoison error: eek!"}} = API.get_payees(bot, abi)
     end
 
-    test "handles malformed response", abi do
+    test "handles malformed response", %{bot: bot, abi: abi} do
       Mimic.expect(HTTPoison, :post, fn _url, _body, _headers ->
         {:ok, %HTTPoison.Response{body: "[%"}}
       end)
 
-      assert {:error, %Error{message: "Invalid json response."}} = API.get_payees(abi)
+      assert {:error, %Error{message: "Invalid json response."}} = API.get_payees(bot, abi)
     end
 
-    test "handles bad response", abi do
+    test "handles bad response", %{bot: bot, abi: abi} do
       Mimic.expect(HTTPoison, :post, fn _url, _body, _headers ->
         {:ok, %HTTPoison.Response{body: Jason.encode!("")}}
       end)
 
-      assert {:error, %Error{message: "Unexpected Twetch payees response"}} = API.get_payees(abi)
+      assert {:error, %Error{message: "Unexpected Twetch payees response"}} =
+               API.get_payees(bot, abi)
     end
   end
 

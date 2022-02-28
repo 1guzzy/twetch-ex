@@ -34,8 +34,8 @@ defmodule Twetch.ABI do
   @doc """
   Replace arg values.
   """
-  def update(%{action: action, args: args}, invoice) do
-    {:ok, %{privkey: privkey, address: address}} = Account.get()
+  def update(bot, %{action: action, args: args}, invoice) do
+    {:ok, %{privkey: privkey, address: address}} = Account.get(bot)
 
     replacements = %{
       "\#{mySignature}" => fn arg, args -> sign(arg, args, privkey) end,

@@ -6,8 +6,8 @@ defmodule Twetch.Transaction do
   alias BSV.Contract.{P2PKH, OpReturn}
   alias Twetch.Account
 
-  def build(args, inputs, payees) do
-    {:ok, %{address: address}} = Account.get()
+  def build(bot, args, inputs, payees) do
+    {:ok, %{address: address}} = Account.get(bot)
 
     tx =
       %TxBuilder{inputs: inputs, outputs: outputs(args, payees)}

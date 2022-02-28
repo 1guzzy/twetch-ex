@@ -6,21 +6,21 @@ defmodule Twetch.UTXO do
   alias Twetch.{Account, API}
 
   @doc """
-  Get Twetch account UTXOs.
+  Get Twetch account UTXOs for the given bot.
   """
-  @spec build_inputs() :: {:ok, list(UTXO.t())} | {:error, any()}
-  def build_inputs() do
-    with {:ok, %{pubkey: pubkey}} <- Account.get(),
+  @spec build_inputs(atom()) :: {:ok, list(UTXO.t())} | {:error, any()}
+  def build_inputs(bot) do
+    with {:ok, %{pubkey: pubkey}} <- Account.get(bot),
          str_pubkey <- PubKey.to_binary(pubkey, encoding: :hex),
          {:ok, utxos} <- API.get_utxos(str_pubkey) do
-      {:ok, Enum.map(utxos, &to_input/1)}
+      {:ok, Enum.map(utxos, &to_input(bot, &1))}
     end
   end
 
   # probably an easier way to do this
-  defp to_input(%{"txid" => txid, "vout" => vout, "satoshis" => str_sats, "path" => path}) do
+  defp to_input(bot, %{"txid" => txid, "vout" => vout, "satoshis" => str_sats, "path" => path}) do
     {sats, _truncate} = Integer.parse(str_sats)
-    {:ok, account} = Account.get(path)
+    {:ok, account} = Account.get(bot, path)
     script = build_input_script(sats, account.address)
 
     %{"txid" => txid, "vout" => vout, "satoshis" => sats, "script" => script}
