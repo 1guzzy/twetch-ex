@@ -7,8 +7,8 @@ defmodule Twetch.Account do
   @doc """
   Get Twetch account key pair & address.
   """
-  def get(path \\ "-1") do
-    ext_key = ExtKey.from_seed(get_env(:base64_ext_key), encoding: :base64)
+  def get(bot, path \\ "-1") do
+    ext_key = ExtKey.from_seed(get_key(bot), encoding: :base64)
 
     case ext_key do
       {:ok, key} ->
@@ -23,7 +23,7 @@ defmodule Twetch.Account do
     end
   end
 
-  defp get_env(key), do: Application.get_env(:twetch, key)
+  defp get_key(bot), do: Application.get_env(:twetch, bot) |> Keyword.get(:base64_ext_key)
 
   defp get_path("-1"), do: "m/0/0"
   defp get_path(path), do: "m/44'/0'/0'/0/" <> path

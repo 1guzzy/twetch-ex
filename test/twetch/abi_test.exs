@@ -62,19 +62,14 @@ defmodule Twetch.ABITest do
   end
 
   describe "update/2" do
-    setup do
-      mock_app_config()
-      {:ok, action} = ABI.new("twetch/post@0.0.1", bContent: "Hello")
-
-      action
-    end
-
-    test "updates abi for post action", abi do
-      {:ok, %{pubkey: pubkey, address: address}} = Account.get()
+    test "updates abi for post action" do
+      bot = mock_app_config()
+      {:ok, abi} = ABI.new("twetch/post@0.0.1", bContent: "Hello")
+      {:ok, %{pubkey: pubkey, address: address}} = Account.get(bot)
       str_address = Address.to_string(address)
       invoice = "10101"
 
-      assert {:ok, %{args: args}} = ABI.update(abi, invoice)
+      assert {:ok, %{args: args}} = ABI.update(bot, abi, invoice)
       assert [^invoice, "|", _aip, _algo, ^str_address, signature] = Enum.slice(args, -6..-1)
 
       hash =

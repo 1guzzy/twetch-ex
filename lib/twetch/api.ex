@@ -8,7 +8,7 @@ defmodule Twetch.API do
   @doc """
   Get payee and invoice information for the given Twetch post.
   """
-  def get_payees(%{action: action, args: args}) do
+  def get_payees(bot, %{action: action, args: args}) do
     body =
       Jason.encode!(%{
         action: action["name"],
@@ -16,7 +16,7 @@ defmodule Twetch.API do
         client_identifier: get_env(:client_id)
       })
 
-    with {:ok, response} <- call_endpoint(:payees, body),
+    with {:ok, response} <- call_authenticated_endpoint(:payees, bot, body),
          :ok <- Validate.payees(response),
          {:ok, payees} <- Parse.payees(response) do
       {:ok, payees}
@@ -39,7 +39,7 @@ defmodule Twetch.API do
   @doc """
   Publish Twetch.
   """
-  def publish(action, tx) do
+  def publish(bot, action, tx) do
     body =
       Jason.encode!(%{
         broadcast: true,
@@ -48,7 +48,7 @@ defmodule Twetch.API do
         payParams: %{tweetFromTwetch: false, hideTweetFromTwetchLink: true}
       })
 
-    with {:ok, response} <- call_endpoint(:publish, body),
+    with {:ok, response} <- call_authenticated_endpoint(:publish, bot, body),
          :ok <- Validate.publish(response) do
       {:ok, Tx.from_binary!(tx, encoding: :hex) |> Tx.get_txid()}
     end
@@ -84,6 +84,22 @@ defmodule Twetch.API do
   end
 
   defp get_env(key), do: Application.get_env(:twetch, key)
+
+  defp call_authenticated_endpoint(endpoint, bot, params) do
+    case Client.make_request(endpoint, bot, params) do
+      {:ok, body} ->
+        {:ok, body}
+
+      {:error, %Jason.DecodeError{}} ->
+        {:error, %Error{message: "Invalid json response."}}
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        {:error, %Error{message: "HTTPoison error: #{reason}"}}
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
 
   defp call_endpoint(endpoint, params \\ %{}) do
     case Client.make_request(endpoint, params) do

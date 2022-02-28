@@ -7,8 +7,12 @@ defmodule Twetch.API.Client do
   @auth_url "https://auth.twetch.app/api/v1"
   @utxo_url "https://metasync.twetch.app/wallet/utxo"
 
-  def make_request(:payees, body), do: post(@api_url <> "/payees", body, auth_headers())
-  def make_request(:publish, body), do: post(@api_url <> "/publish", body, auth_headers())
+  def make_request(:payees, bot, body), do: post(@api_url <> "/payees", body, auth_headers(bot))
+  def make_request(:publish, bot, body), do: post(@api_url <> "/publish", body, auth_headers(bot))
+
+  def make_request(:client_id, bot, body),
+    do: post(@auth_url <> "/client-identifier", body, auth_headers(bot))
+
   def make_request(:utxos, body), do: post(@utxo_url, body, headers())
   def make_request(:challenge, _body), do: get(@auth_url <> "/challenge")
   def make_request(:bearer_token, body), do: post(@auth_url <> "/authenticate", body, headers())
@@ -29,12 +33,12 @@ defmodule Twetch.API.Client do
 
   defp headers(), do: [{"content-type", "application/json"}]
 
-  defp auth_headers() do
+  defp auth_headers(bot) do
     [
       {"content-type", "application/json"},
-      {"Authorization", "Bearer #{get_env(:token)}"}
+      {"Authorization", "Bearer #{get_env(bot)}"}
     ]
   end
 
-  defp get_env(key), do: Application.get_env(:twetch, key)
+  defp get_env(bot), do: Application.get_env(:twetch, bot) |> Keyword.get(:token)
 end

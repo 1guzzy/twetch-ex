@@ -9,11 +9,8 @@ defmodule Twetch.TransactionTest do
   doctest Transaction
 
   describe "build/3" do
-    setup do
-      mock_app_config()
-    end
-
     test "builds transaction" do
+      bot = mock_app_config()
       args = []
       inputs = []
 
@@ -22,11 +19,11 @@ defmodule Twetch.TransactionTest do
         %{address: "13sxDC5J183161yr4HponctFedE2z7jiGA", sats: 2129}
       ]
 
-      assert {:ok, raw_tx} = Transaction.build(args, inputs, payees)
+      assert {:ok, raw_tx} = Transaction.build(bot, args, inputs, payees)
       {:ok, tx} = Tx.from_binary(raw_tx, encoding: :hex)
 
       assert length(tx.inputs) == 0
-      # would be 4 but theres not change output because there are no inputs
+      # would be 4 but theres no change output because there are no inputs
       assert length(tx.outputs) == 3
     end
   end
