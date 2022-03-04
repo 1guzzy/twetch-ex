@@ -39,13 +39,13 @@ defmodule Twetch.API do
   @doc """
   Publish Twetch.
   """
-  def publish(bot, action, tx) do
+  def publish(bot, action, tx, tweet_from_twetch) do
     body =
       Jason.encode!(%{
         broadcast: true,
         action: action,
         signed_raw_tx: tx,
-        payParams: %{tweetFromTwetch: false, hideTweetFromTwetchLink: true}
+        payParams: %{tweetFromTwetch: tweet_from_twetch, hideTweetFromTwetchLink: true}
       })
 
     with {:ok, response} <- call_authenticated_endpoint(:publish, bot, body),
