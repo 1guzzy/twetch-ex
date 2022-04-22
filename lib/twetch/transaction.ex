@@ -14,9 +14,10 @@ defmodule Twetch.Transaction do
       |> TxBuilder.sort()
       |> TxBuilder.change_to(address)
       |> TxBuilder.to_tx()
-      |> Tx.to_binary(encoding: :hex)
 
-    {:ok, tx}
+    IO.inspect(Tx.get_txid(tx), label: "tx_id")
+
+    {:ok, Tx.to_binary(tx, encoding: :hex)}
   end
 
   defp outputs(args, payees) do

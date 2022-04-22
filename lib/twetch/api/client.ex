@@ -25,7 +25,7 @@ defmodule Twetch.API.Client do
   end
 
   defp post(url, body, headers) do
-    case HTTPoison.post(url, body, headers) do
+    case HTTPoison.post(url, body, headers, recv_timeout: 60000) do
       {:ok, response} -> Jason.decode(response.body)
       {:error, error} -> {:error, error}
     end
